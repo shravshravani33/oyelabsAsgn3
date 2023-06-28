@@ -1,0 +1,87 @@
+const mysql = require('mysql');
+
+const customers = [
+  {
+    email: 'anurag11@yopmail.com',
+    name: 'anurag'
+  },
+  {
+    email: 'sameer11@yopmail.com',
+    name: 'sameer'
+  },
+  {
+    email: 'ravi11@yopmail.com',
+    name: 'ravi'
+  },
+  {
+    email: 'akash11@yopmail.com',
+    name: 'akash'
+  },
+  {
+    email: 'anjali11@yopmail.com',
+    name: 'anjai'
+  },
+  {
+    email: 'santosh11@yopmail.com',
+    name: 'santosh'
+  }
+];
+
+// MySQL connection configuration
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'your_username',
+  password: 'your_password',
+  database: 'your_database'
+});
+
+// Connect to MySQL
+connection.connect((err) => {
+  if (err) {
+    console.error('Error connecting to MySQL: ', err);
+    return;
+  }
+  console.log('Connected to MySQL.');
+
+  // Iterate through each customer and perform insertion/update
+  customers.forEach((customer) => {
+    const { email, name } = customer;
+
+    // Check if email already exists in the database
+    connection.query('SELECT * FROM customers WHERE email = ?', [email], (err, results) => {
+      if (err) {
+        console.error('Error checking if email exists: ', err);
+        return;
+      }
+
+      if (results.length > 0) {
+        // Email exists, update the customer name
+        connection.query('UPDATE customers SET name = ? WHERE email = ?', [name, email], (err, updateResult) => {
+          if (err) {
+            console.error('Error updating customer name: ', err);
+            return;
+          }
+          console.log(`Updated name for email ${email}`);
+        });
+      } else {
+        // Email does not exist, insert a new customer
+        connection.query('INSERT INTO customers (email, name) VALUES (?, ?)', [email, name], (err, insertResult) => {
+          if (err) {
+            console.error('Error inserting new customer: ', err);
+            return;
+          }
+          console.log(`Inserted new customer with email ${email}`);
+        });
+      }
+    });
+  });
+
+  // Close the MySQL connection
+  connection.end((err) => {
+    if (err) {
+      console.error('Error closing MySQL connection: ', err);
+      return;
+    }
+    console.log('MySQL connection closed.');
+  });
+});
